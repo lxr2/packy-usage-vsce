@@ -4,13 +4,13 @@ import { DataService } from "./data.service"
 import { StatusBarService } from "./status-bar.service"
 
 export class PollingService {
-  private readonly POLLING_INTERVAL = 30000 // 30 seconds
   private pollingTimer: NodeJS.Timeout | null = null
 
   constructor(
     private apiService: ApiService,
     private dataService: DataService,
-    private statusBarService: StatusBarService
+    private statusBarService: StatusBarService,
+    private pollingInterval: number = 30000 // 默认30秒，可通过构造函数配置
   ) {}
 
   dispose(): void {
@@ -21,19 +21,16 @@ export class PollingService {
     this.stop()
     this.pollingTimer = setInterval(async () => {
       try {
-        // Skip fetch if cache is still valid
-        if (this.dataService.isCacheValid) {
-          return
-        }
-
         const data = await this.apiService.fetchBudgetData()
         if (data) {
           this.dataService.updateData(data)
         }
       } catch (error) {
         ErrorHandler.handle(error as Error)
+        // 轮询失败时更新状态栏
+        this.statusBarService.showErrorStatus("数据同步失败")
       }
-    }, this.POLLING_INTERVAL)
+    }, this.pollingInterval)
   }
 
   stop(): void {

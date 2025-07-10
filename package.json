@@ -2,7 +2,7 @@
   "name": "packy-usage",
   "displayName": "Packy Usage",
   "description": "实时监控API预算使用情况，跟踪每日和每月的API消费",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "MashiroWang",
   "pricing": "Free",
   "author": {
@@ -38,7 +38,9 @@
     "Other",
     "Visualization"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
