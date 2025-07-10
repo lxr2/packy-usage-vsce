@@ -11,8 +11,6 @@ import { ErrorHandler } from "./utils/error-handler"
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  console.log('"packy-usage" extension is now active!')
-
   // Initialize services
   const dataService = new DataService()
   const statusBarService = new StatusBarService()
@@ -60,21 +58,64 @@ export function activate(context: vscode.ExtensionContext) {
           if (value.length < 10) {
             return "Token seems too short"
           }
+
+          // 检查JWT格式
+          const parts = value.split(".")
+          if (parts.length !== 3) {
+            return "Token格式无效，请确保是有效的JWT Token"
+          }
+
+          // 检查是否已过期
+          try {
+            const [, payload] = parts
+            const base64 = payload.replace(/-/g, "+").replace(/_/g, "/")
+            const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4)
+            const decoded = Buffer.from(padded, "base64").toString("utf8")
+            const parsedPayload = JSON.parse(decoded)
+
+            if (parsedPayload.exp) {
+              const currentTime = Math.floor(Date.now() / 1000)
+              if (currentTime >= parsedPayload.exp) {
+                const expiredDate = new Date(parsedPayload.exp * 1000)
+                return `Token已过期（过期时间: ${expiredDate.toLocaleString()}）`
+              }
+            }
+          } catch {
+            return "Token格式无效，无法解析"
+          }
+
           return null
         }
       })
 
       if (token) {
-        await secretService.setToken(token)
-        vscode.window.showInformationMessage("API Token saved successfully!")
-        usageExplorerProvider.refresh()
         try {
-          const data = await apiService.fetchBudgetData()
-          if (data) {
-            dataService.updateData(data)
+          await secretService.setToken(token)
+
+          // 显示Token过期时间信息
+          const expiration = secretService.getTokenExpiration(token)
+          const expirationText = expiration
+            ? `，将于 ${expiration.toLocaleString()} 过期`
+            : ""
+
+          vscode.window.showInformationMessage(
+            `API Token保存成功${expirationText}！`
+          )
+
+          usageExplorerProvider.refresh()
+
+          try {
+            const data = await apiService.fetchBudgetData()
+            if (data) {
+              dataService.updateData(data)
+            }
+          } catch (error) {
+            ErrorHandler.handle(error as Error)
           }
         } catch (error) {
-          ErrorHandler.handle(error as Error)
+          vscode.window.showErrorMessage(
+            `保存Token失败: ${(error as Error).message}`
+          )
         }
       }
     }),

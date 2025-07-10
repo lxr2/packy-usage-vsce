@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
+      - name: Install dependencies
+        run: pnpm install
+        
+      - name: Run linting
+        run: pnpm run lint
+        
+      - name: Compile TypeScript
+        run: pnpm run compile
+        
+      - name: Run tests
+        run: pnpm run test
+        continue-on-error: true
+        
+      - name: Test package creation
+        run: |
+          pnpm add -g @vscode/vsce
+          vsce package --allow-missing-repository

@@ -3,7 +3,8 @@
   "displayName": "Packy Usage",
   "description": "实时监控API预算使用情况，跟踪每日和每月的API消费",
   "version": "1.0.0",
-  "publisher": "94mashiro",
+  "publisher": "MashiroWang",
+  "pricing": "Free",
   "author": {
     "name": "mashirowang",
     "email": "github@te.sb"
@@ -42,10 +43,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "packy-usage.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "packy-usage.setToken",
         "title": "Set API Token",
         "category": "Packy Usage"
@@ -55,11 +52,6 @@
         "title": "Refresh Budget Data",
         "category": "Packy Usage",
         "icon": "$(refresh)"
-      },
-      {
-        "command": "packy-usage.showSetupGuide",
-        "title": "Show Setup Guide",
-        "category": "Packy Usage"
       },
       {
         "command": "packy-usage.showExplorer",
@@ -119,7 +111,8 @@
     "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package --allow-missing-repository"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

@@ -41,6 +41,8 @@ export class ApiService {
 
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
+          // 认证失败可能是Token过期，触发Token清理
+          await this.handleAuthFailure()
           throw ErrorHandler.createAuthError(
             `认证失败 (${response.status}): ${response.statusText}`
           )
@@ -63,6 +65,16 @@ export class ApiService {
       }
       throw error
     }
+  }
+
+  /**
+   * 处理认证失败的情况
+   */
+  private async handleAuthFailure(): Promise<void> {
+    try {
+      // 清理可能过期的Token
+      await this.secretService.deleteToken()
+    } catch {}
   }
 
   private transformToBudgetData(data: ApiResponse): BudgetData {

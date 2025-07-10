@@ -22,6 +22,11 @@ export class UsageExplorerProvider
     this.dataService.onDidUpdateData(() => {
       this.refresh()
     })
+
+    // Listen to secret changes (including token deletion due to expiration)
+    this.secretService.onDidChange(() => {
+      this.refresh()
+    })
   }
 
   dispose(): void {

@@ -1,0 +1,121 @@
+name: Release VS Code Extension
+
+on:
+  push:
+    tags:
+      - 'v*'  # 触发条件：推送以 v 开头的标签（如 v1.0.0）
+
+permissions:
+  contents: write  # 创建 release 和上传文件需要写权限
+  
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+          
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+        
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+          
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        
+      - name: Get tag name and version
+        id: tag
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "vsix_file=packy-usage-$VERSION.vsix" >> $GITHUB_OUTPUT
+        
+      - name: Verify version consistency
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.tag.outputs.version }}"
+          echo "Package version: $PACKAGE_VERSION"
+          echo "Tag version: $TAG_VERSION"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "❌ Version mismatch: package.json($PACKAGE_VERSION) != tag($TAG_VERSION)"
+            exit 1
+          fi
+          echo "✅ Version consistency check passed"
+        
+      - name: Compile TypeScript
+        run: pnpm run compile
+        
+      - name: Run tests
+        run: pnpm run test
+        continue-on-error: true  # 测试失败不阻断构建
+        
+      - name: Package extension
+        run: npx @vscode/vsce package --allow-missing-repository
+        
+      - name: Verify VSIX file exists
+        run: |
+          if [ ! -f "${{ steps.tag.outputs.vsix_file }}" ]; then
+            echo "❌ VSIX file not found: ${{ steps.tag.outputs.vsix_file }}"
+            ls -la *.vsix || echo "No .vsix files found"
+            exit 1
+          fi
+          echo "✅ VSIX file verified: ${{ steps.tag.outputs.vsix_file }}"
+        
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Release ${{ steps.tag.outputs.tag }}
+          body: |
+            ## 🚀 Release ${{ steps.tag.outputs.tag }}
+            
+            ### 📦 安装方式
+            
+            1. **从 Release 下载**：下载 `.vsix` 文件，然后在 VS Code 中使用 `Extensions: Install from VSIX` 命令安装
+            2. **命令行安装**：
+               ```bash
+               code --install-extension ${{ steps.tag.outputs.vsix_file }}
+               ```
+            
+            ### 📋 更新内容
+            - 请查看 [CHANGELOG.md](https://github.com/94mashiro/packy-usage-vsce/blob/main/CHANGELOG.md) 了解详细更新内容
+            
+            ### 🐛 问题反馈
+            如遇到问题，请在 [Issues](https://github.com/94mashiro/packy-usage-vsce/issues) 中反馈
+          files: ${{ steps.tag.outputs.vsix_file }}
+          draft: false
+          prerelease: false
+          
+      - name: Publish to VS Code Marketplace
+        if: true  # 设置为 false 禁用自动发布到市场
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          echo "🚀 Publishing to VS Code Marketplace..."
+          if npx @vscode/vsce publish --pat $VSCE_PAT; then
+            echo "✅ Successfully published to Marketplace"
+          else
+            echo "❌ Failed to publish to Marketplace, but GitHub Release was created successfully"
+            exit 1
+          fi

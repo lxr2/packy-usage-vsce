@@ -48,8 +48,6 @@ export class ErrorHandler {
   }
 
   private static handleAppError(error: AppError): void {
-    console.error(`[${error.type}]:`, error.message, error.originalError)
-
     switch (error.type) {
       case ErrorType.API_ERROR:
         vscode.window.showErrorMessage(`API请求失败: ${error.message}`)
@@ -72,7 +70,6 @@ export class ErrorHandler {
   }
 
   private static handleUnknownError(error: Error): void {
-    console.error("Unknown error:", error)
     vscode.window.showErrorMessage(`未知错误: ${error.message}`)
   }
 }
