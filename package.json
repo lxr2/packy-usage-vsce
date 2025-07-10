@@ -1,0 +1,141 @@
+{
+  "name": "packy-usage",
+  "displayName": "Packy Usage",
+  "description": "实时监控API预算使用情况，跟踪每日和每月的API消费",
+  "version": "1.0.0",
+  "publisher": "94mashiro",
+  "author": {
+    "name": "mashirowang",
+    "email": "github@te.sb"
+  },
+  "icon": "images/icon.png",
+  "galleryBanner": {
+    "color": "#1e1e1e",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/94mashiro/packy-usage-vsce"
+  },
+  "bugs": {
+    "url": "https://github.com/94mashiro/packy-usage-vsce/issues"
+  },
+  "homepage": "https://github.com/94mashiro/packy-usage-vsce#readme",
+  "license": "MIT",
+  "keywords": [
+    "api",
+    "budget",
+    "monitoring",
+    "usage",
+    "cost",
+    "packy"
+  ],
+  "engines": {
+    "vscode": "^1.54.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "packy-usage.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "packy-usage.setToken",
+        "title": "Set API Token",
+        "category": "Packy Usage"
+      },
+      {
+        "command": "packy-usage.refresh",
+        "title": "Refresh Budget Data",
+        "category": "Packy Usage",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "packy-usage.showSetupGuide",
+        "title": "Show Setup Guide",
+        "category": "Packy Usage"
+      },
+      {
+        "command": "packy-usage.showExplorer",
+        "title": "Show Usage Explorer",
+        "category": "Packy Usage"
+      }
+    ],
+    "configuration": {
+      "title": "Packy Usage",
+      "properties": {
+        "packy-usage.apiToken": {
+          "type": "string",
+          "default": "",
+          "description": "API Token for budget data access",
+          "scope": "application"
+        },
+        "packy-usage.apiEndpoint": {
+          "type": "string",
+          "default": "https://www.packycode.com/api/backend/users/info",
+          "description": "API endpoint for budget data",
+          "scope": "application"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "packy-usage",
+          "title": "Packy Usage",
+          "icon": "$(package)"
+        }
+      ]
+    },
+    "views": {
+      "packy-usage": [
+        {
+          "id": "packy-usage.explorer",
+          "name": "Usage Explorer",
+          "when": "true"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "packy-usage.refresh",
+          "when": "view == packy-usage.explorer",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.30.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.54.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.6.0",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-perfectionist": "^4.15.0",
+    "eslint-plugin-prettier": "^5.5.1",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.36.0"
+  }
+}
