@@ -2,6 +2,9 @@
 
 一个VS Code扩展，用于实时监控API预算使用情况，帮助开发者跟踪每日和每月的API消费。
 
+<img width="356" alt="image" src="https://github.com/user-attachments/assets/a8fc519c-598d-4022-b944-9c0bfee2a2be" />
+
+
 ## ✨ 功能特性
 
 - 📊 **实时预算监控** - 显示每日和每月的API预算使用情况
