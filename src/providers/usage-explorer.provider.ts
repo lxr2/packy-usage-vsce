@@ -40,13 +40,13 @@ export class UsageExplorerProvider
       if (!token) {
         return [
           new UsageItem(
-            "⚠️ 未配置 Token",
+            vscode.l10n.t("⚠️ Token not configured"),
             vscode.TreeItemCollapsibleState.None,
             "noToken",
             "$(warning)"
           ),
           new UsageItem(
-            "点击设置 API Token",
+            vscode.l10n.t("Click to set API Token"),
             vscode.TreeItemCollapsibleState.None,
             "setToken",
             "$(gear)"
@@ -57,13 +57,13 @@ export class UsageExplorerProvider
       if (!this.dataService.isDataLoaded) {
         return [
           new UsageItem(
-            "📊 点击刷新获取预算数据",
+            vscode.l10n.t("📊 Click refresh to get budget data"),
             vscode.TreeItemCollapsibleState.None,
             "noData",
             "$(info)"
           ),
           new UsageItem(
-            "🔧 配置",
+            vscode.l10n.t("🔧 Configuration"),
             vscode.TreeItemCollapsibleState.Collapsed,
             "settings",
             "$(gear)"
@@ -73,19 +73,19 @@ export class UsageExplorerProvider
 
       return [
         new UsageItem(
-          "日预算",
+          vscode.l10n.t("Daily Budget"),
           vscode.TreeItemCollapsibleState.Expanded,
           "dailyBudget",
           "$(calendar)"
         ),
         new UsageItem(
-          "月预算",
+          vscode.l10n.t("Monthly Budget"),
           vscode.TreeItemCollapsibleState.Expanded,
           "monthlyBudget",
           "$(calendar)"
         ),
         new UsageItem(
-          "🔧 配置",
+          vscode.l10n.t("🔧 Configuration"),
           vscode.TreeItemCollapsibleState.Collapsed,
           "settings",
           "$(gear)"
@@ -117,19 +117,19 @@ export class UsageExplorerProvider
 
     return Promise.resolve([
       new UsageItem(
-        `已使用: $${dailyUsed.toFixed(2)}`,
+        vscode.l10n.t("Used: ${0}", dailyUsed.toFixed(2)),
         vscode.TreeItemCollapsibleState.None,
         "dailyUsed",
         "$(circle-filled)"
       ),
       new UsageItem(
-        `总预算: $${dailyTotal.toFixed(2)}`,
+        vscode.l10n.t("Total Budget: ${0}", dailyTotal.toFixed(2)),
         vscode.TreeItemCollapsibleState.None,
         "dailyTotal",
         "$(circle-outline)"
       ),
       new UsageItem(
-        `使用率: ${dailyPercentage.toFixed(1)}%`,
+        vscode.l10n.t("Usage Rate: {0}%", dailyPercentage.toFixed(1)),
         vscode.TreeItemCollapsibleState.None,
         "dailyPercentage",
         this.dataService.getPercentageIcon(dailyPercentage)
@@ -145,19 +145,19 @@ export class UsageExplorerProvider
 
     return Promise.resolve([
       new UsageItem(
-        `已使用: $${monthlyUsed.toFixed(2)}`,
+        vscode.l10n.t("Used: ${0}", monthlyUsed.toFixed(2)),
         vscode.TreeItemCollapsibleState.None,
         "monthlyUsed",
         "$(circle-filled)"
       ),
       new UsageItem(
-        `总预算: $${monthlyTotal.toFixed(2)}`,
+        vscode.l10n.t("Total Budget: ${0}", monthlyTotal.toFixed(2)),
         vscode.TreeItemCollapsibleState.None,
         "monthlyTotal",
         "$(circle-outline)"
       ),
       new UsageItem(
-        `使用率: ${monthlyPercentage.toFixed(1)}%`,
+        vscode.l10n.t("Usage Rate: {0}%", monthlyPercentage.toFixed(1)),
         vscode.TreeItemCollapsibleState.None,
         "monthlyPercentage",
         this.dataService.getPercentageIcon(monthlyPercentage)
@@ -172,15 +172,15 @@ export class UsageExplorerProvider
     const endpoint = config.get<string>("apiEndpoint")
 
     // 构建token状态显示
-    let tokenLabel = "Token: "
+    let tokenLabel = vscode.l10n.t("Token: ")
     if (!token) {
-      tokenLabel += "未配置"
+      tokenLabel += vscode.l10n.t("Not Configured")
     } else if (tokenType === TokenType.API_KEY) {
-      tokenLabel += "已配置 (API Token)"
+      tokenLabel += vscode.l10n.t("Configured (API Token)")
     } else if (tokenType === TokenType.JWT) {
-      tokenLabel += "已配置 (JWT Token)"
+      tokenLabel += vscode.l10n.t("Configured (JWT Token)")
     } else {
-      tokenLabel += "已配置"
+      tokenLabel += vscode.l10n.t("Configured")
     }
 
     return [
@@ -191,7 +191,7 @@ export class UsageExplorerProvider
         token ? "$(check)" : "$(x)"
       ),
       new UsageItem(
-        "设置 Token",
+        vscode.l10n.t("Set Token"),
         vscode.TreeItemCollapsibleState.None,
         "setToken",
         "$(edit)"

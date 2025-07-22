@@ -47,11 +47,19 @@ export class ExtensionManager {
       // 启动服务
       await this.startServices()
 
-      console.log("🚀 Packy Usage Extension 激活成功")
+      console.log(
+        vscode.l10n.t("🚀 Packy Usage Extension activated successfully")
+      )
     } catch (error) {
-      console.error("❌ Packy Usage Extension 激活失败:", error)
+      console.error(
+        vscode.l10n.t("❌ Packy Usage Extension activation failed:"),
+        error
+      )
       vscode.window.showErrorMessage(
-        `插件激活失败: ${(error as Error).message}`
+        vscode.l10n.t(
+          "Extension activation failed: {0}",
+          (error as Error).message
+        )
       )
     }
   }
@@ -61,7 +69,7 @@ export class ExtensionManager {
    */
   deactivate(): void {
     this.dispose()
-    console.log("🔄 Packy Usage Extension 已停用")
+    console.log(vscode.l10n.t("🔄 Packy Usage Extension deactivated"))
   }
 
   /**
@@ -69,19 +77,21 @@ export class ExtensionManager {
    */
   getStatus(): string {
     if (!this.configService) {
-      return "扩展未初始化"
+      return vscode.l10n.t("Extension not initialized")
     }
 
     const config = this.configService.getConfig()
     const dataLoaded = this.dataService?.isDataLoaded ?? false
-    const pollingActive = this.pollingService ? "运行中" : "已停止"
+    const pollingActive = this.pollingService
+      ? vscode.l10n.t("Running")
+      : vscode.l10n.t("Stopped")
 
-    return `Packy Usage 状态:
-- 数据已加载: ${dataLoaded ? "是" : "否"}
-- 轮询状态: ${pollingActive}
-- 配置状态: ${config.apiToken ? "Token已配置" : "Token未配置"}
-- API端点: ${config.apiEndpoint}
-- 轮询间隔: ${config.pollingInterval}ms`
+    return `Packy Usage ${vscode.l10n.t("Status")}:
+- ${vscode.l10n.t("Data Loaded")}: ${dataLoaded ? vscode.l10n.t("Yes") : vscode.l10n.t("No")}
+- ${vscode.l10n.t("Polling Status")}: ${pollingActive}
+- ${vscode.l10n.t("Configuration Status")}: ${config.apiToken ? vscode.l10n.t("Token Configured") : vscode.l10n.t("Token Not Configured")}
+- API${vscode.l10n.t("Endpoint")}: ${config.apiEndpoint}
+- ${vscode.l10n.t("Polling Interval")}: ${config.pollingInterval}ms`
   }
 
   /**
@@ -93,7 +103,7 @@ export class ExtensionManager {
       try {
         disposable.dispose()
       } catch (error) {
-        console.error("清理资源时出错:", error)
+        console.error(vscode.l10n.t("Error during cleanup:"), error)
       }
     })
 
@@ -104,7 +114,7 @@ export class ExtensionManager {
       this.statusBarService?.dispose()
       this.pollingService?.dispose()
     } catch (error) {
-      console.error("清理服务时出错:", error)
+      console.error(vscode.l10n.t("Error cleaning up service:"), error)
     }
 
     this.disposables = []
@@ -201,7 +211,7 @@ export class ExtensionManager {
     // 监听配置变更事件
     const configChangeListener = this.configService.onConfigurationChanged(
       (config) => {
-        console.log("📝 配置已更新:", config)
+        console.log(vscode.l10n.t("📝 Configuration updated:"), config)
         // 如果轮询设置改变，重启轮询服务
         if (config.enablePolling) {
           this.pollingService.start()

@@ -124,9 +124,12 @@ export class SecretService {
     if (validator && validator.isExpired(token)) {
       await this.deleteToken()
       vscode.window
-        .showWarningMessage("Token已过期，请重新配置", "立即配置")
+        .showWarningMessage(
+          vscode.l10n.t("Token has expired, please reconfigure"),
+          vscode.l10n.t("Configure Now")
+        )
         .then((choice) => {
-          if (choice === "立即配置") {
+          if (choice === vscode.l10n.t("Configure Now")) {
             vscode.commands.executeCommand("packy-usage.setToken")
           }
         })
