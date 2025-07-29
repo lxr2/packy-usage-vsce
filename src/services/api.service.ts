@@ -30,8 +30,7 @@ export class ApiService {
       const response = await fetch(endpoint, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Cookie: `token=${token}`
+          "Content-Type": "application/json"
         },
         method: "GET",
         signal: controller.signal

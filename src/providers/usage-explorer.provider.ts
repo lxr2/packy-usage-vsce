@@ -1,7 +1,7 @@
 import * as vscode from "vscode"
 
 import { DataService } from "../services/data.service"
-import { SecretService } from "../services/secret.service"
+import { SecretService, TokenType } from "../services/secret.service"
 import { UsageItem } from "./usage-item"
 
 export class UsageExplorerProvider
@@ -168,14 +168,33 @@ export class UsageExplorerProvider
   private async getSettingsChildren(): Promise<UsageItem[]> {
     const config = vscode.workspace.getConfiguration("packy-usage")
     const token = await this.secretService.getToken()
+    const tokenType = await this.secretService.getTokenType()
     const endpoint = config.get<string>("apiEndpoint")
+
+    // 构建token状态显示
+    let tokenLabel = "Token: "
+    if (!token) {
+      tokenLabel += "未配置"
+    } else if (tokenType === TokenType.API_KEY) {
+      tokenLabel += "已配置 (API Token)"
+    } else if (tokenType === TokenType.JWT) {
+      tokenLabel += "已配置 (JWT Token)"
+    } else {
+      tokenLabel += "已配置"
+    }
 
     return [
       new UsageItem(
-        `Token: ${token ? "已配置" : "未配置"}`,
+        tokenLabel,
         vscode.TreeItemCollapsibleState.None,
         "tokenStatus",
         token ? "$(check)" : "$(x)"
+      ),
+      new UsageItem(
+        "设置 Token",
+        vscode.TreeItemCollapsibleState.None,
+        "setToken",
+        "$(edit)"
       ),
       new UsageItem(
         `API: ${endpoint}`,

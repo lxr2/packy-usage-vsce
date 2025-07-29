@@ -89,10 +89,48 @@ export class CommandController {
    * 处理设置Token命令
    */
   private async handleSetToken(): Promise<void> {
+    // 显示获取Token的帮助信息
+    const helpChoice = await vscode.window.showInformationMessage(
+      "请选择Token获取方式",
+      "先查看获取说明",
+      "输入Token"
+    )
+
+    if (!helpChoice) {
+      return
+    }
+
+    if (helpChoice === "先查看获取说明") {
+      const tokenType = await vscode.window.showQuickPick(
+        [
+          {
+            description: "永久有效的访问令牌",
+            detail: "到PackyCode Dashboard直接获取以'sk-'开头的API Token",
+            label: "API Token (推荐)"
+          },
+          {
+            description: "从PackyCode Dashboard获取的临时令牌",
+            detail:
+              "访问PackyCode Dashboard，打开浏览器开发者工具(F12)，在Application/Storage > Cookies中找到名为'token'的Cookie值",
+            label: "JWT Token"
+          }
+        ],
+        {
+          placeHolder: "选择Token类型查看详细说明",
+          title: "Token获取说明"
+        }
+      )
+
+      if (!tokenType) {
+        return
+      }
+    }
+
     const token = await vscode.window.showInputBox({
       password: true,
-      placeHolder: "API Token for budget data access",
-      prompt: "Enter your API Token",
+      placeHolder: "输入API Token (sk-开头) 或 JWT Token",
+      prompt:
+        "推荐使用永久有效的API Token (sk-开头)。JWT Token可从PackyCode Dashboard的Cookie中获取",
       validateInput: (value) => this.validateTokenInput(value)
     })
 
@@ -103,15 +141,21 @@ export class CommandController {
     try {
       await this.secretService.setToken(token)
 
-      // 显示Token过期时间信息
-      const expiration = this.secretService.getTokenExpiration(token)
-      const expirationText = expiration
-        ? `，将于 ${expiration.toLocaleString()} 过期`
-        : ""
+      // 显示Token类型和过期时间信息
+      if (token.startsWith("sk-")) {
+        vscode.window.showInformationMessage(
+          "API Token保存成功！该Token永久有效。"
+        )
+      } else {
+        const expiration = this.secretService.getTokenExpiration(token)
+        const expirationText = expiration
+          ? `，将于 ${expiration.toLocaleString()} 过期`
+          : ""
 
-      vscode.window.showInformationMessage(
-        `API Token保存成功${expirationText}！`
-      )
+        vscode.window.showInformationMessage(
+          `JWT Token保存成功${expirationText}！`
+        )
+      }
 
       // 刷新视图和数据
       this.usageExplorerProvider.refresh()
@@ -135,12 +179,38 @@ export class CommandController {
    */
   private async showTokenSetupPrompt(): Promise<void> {
     const choice = await vscode.window.showInformationMessage(
-      "需要配置 API Token 来获取预算数据",
+      "需要配置访问令牌来获取预算数据",
       "立即配置",
+      "查看帮助",
       "稍后配置"
     )
 
     switch (choice) {
+      case "查看帮助": {
+        const helpText = `### Token获取方式
+
+**API Token (推荐)**
+- 永久有效的访问令牌
+- 到PackyCode Dashboard直接获取以'sk-'开头的API Token
+
+**JWT Token**
+- 从PackyCode Dashboard获取的临时令牌
+- 获取步骤：
+  1. 访问PackyCode Dashboard
+  2. 打开浏览器开发者工具（按F12或右键选择"检查"）
+  3. 切换到"Application"或"Storage"选项卡
+  4. 在左侧找到"Cookies"并展开
+  5. 选择当前网站域名
+  6. 在右侧列表中找到名为"token"的Cookie
+  7. 复制其值作为您的JWT Token`
+
+        vscode.window.showInformationMessage(helpText, { modal: true })
+        // 显示帮助后再提示配置
+        setTimeout(() => {
+          vscode.commands.executeCommand("packy-usage.setToken")
+        }, 500)
+        break
+      }
       case "稍后配置":
         vscode.window.showInformationMessage(
           '您可以随时通过命令面板搜索 "Set API Token" 来配置。'
@@ -157,38 +227,38 @@ export class CommandController {
    */
   private validateTokenInput(value: string): null | string {
     if (!value || value.trim().length === 0) {
-      return "Token cannot be empty"
+      return "Token不能为空"
     }
 
-    if (value.length < 10) {
-      return "Token seems too short"
+    // 优先检查是否为SK Token
+    if (value.startsWith("sk-")) {
+      // SK Token验证通过
+      return null
     }
 
-    // 检查JWT格式
-    const parts = value.split(".")
-    if (parts.length !== 3) {
-      return "Token格式无效，请确保是有效的JWT Token"
-    }
+    // 其次检查JWT格式
+    if (value.split(".").length === 3) {
+      // JWT验证
+      try {
+        const [, payload] = value.split(".")
+        const base64 = payload.replace(/-/g, "+").replace(/_/g, "/")
+        const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4)
+        const decoded = Buffer.from(padded, "base64").toString("utf8")
+        const parsedPayload = JSON.parse(decoded)
 
-    // 检查是否已过期
-    try {
-      const [, payload] = parts
-      const base64 = payload.replace(/-/g, "+").replace(/_/g, "/")
-      const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4)
-      const decoded = Buffer.from(padded, "base64").toString("utf8")
-      const parsedPayload = JSON.parse(decoded)
-
-      if (parsedPayload.exp) {
-        const currentTime = Math.floor(Date.now() / 1000)
-        if (currentTime >= parsedPayload.exp) {
-          const expiredDate = new Date(parsedPayload.exp * 1000)
-          return `Token已过期（过期时间: ${expiredDate.toLocaleString()}）`
+        if (parsedPayload.exp) {
+          const currentTime = Math.floor(Date.now() / 1000)
+          if (currentTime >= parsedPayload.exp) {
+            const expiredDate = new Date(parsedPayload.exp * 1000)
+            return `JWT Token已过期（过期时间: ${expiredDate.toLocaleString()}）`
+          }
         }
+      } catch {
+        return "JWT Token格式无效"
       }
-    } catch {
-      return "Token格式无效，无法解析"
+      return null
     }
 
-    return null
+    return "无法识别的Token格式，请提供API Token (sk-开头) 或 JWT Token"
   }
 }

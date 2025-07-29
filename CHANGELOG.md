@@ -2,6 +2,29 @@
 
 All notable changes to the "packy-usage" extension will be documented in this file.
 
+## [1.1.0] - 2025-07-29
+
+### 🚀 新增功能
+- 🔑 **双Token支持** - 新增支持两种Token类型：
+  - API Token (sk-开头)：永久有效的访问令牌
+  - JWT Token：从Dashboard获取的临时令牌
+- 📋 **Token类型显示** - 在侧边栏配置区域显示当前Token类型
+- 📖 **Token获取帮助** - 提供详细的Token获取说明文档
+- 🔄 **自动类型检测** - 自动识别并验证Token类型
+- ⬆️ **向后兼容** - 自动迁移旧版本JWT Token，无需重新配置
+
+### 改进
+- 优化Token输入提示，优先推荐API Token
+- 简化API请求认证，移除Cookie头部，统一使用Bearer认证
+- 改进Token验证逻辑，SK Token仅验证前缀
+- 增强用户体验，提供清晰的Token获取指引
+- 完善错误提示信息，区分不同Token类型的错误
+
+### 技术改进
+- 重构SecretService，采用策略模式支持多种Token类型
+- 优化Token存储机制，支持Token类型持久化
+- 改进代码架构，提升可扩展性和维护性
+
 ## [1.0.1] - 2025-07-10
 
 ### 🎉 主要改进

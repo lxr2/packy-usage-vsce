@@ -32,6 +32,9 @@ export class ExtensionManager {
       // 初始化服务
       this.initializeServices(context)
 
+      // 迁移token类型（兼容旧版本）
+      await this.migrateTokenIfNeeded()
+
       // 注册提供者
       this.registerProviders(context)
 
@@ -126,6 +129,27 @@ export class ExtensionManager {
       this.statusBarService,
       config.pollingInterval
     )
+  }
+
+  /**
+   * 迁移token类型（兼容旧版本）
+   */
+  private async migrateTokenIfNeeded(): Promise<void> {
+    try {
+      const token = await this.secretService.getToken()
+      const tokenType = await this.secretService.getTokenType()
+
+      // 如果有token但没有type，说明是旧版本用户
+      if (token && !tokenType) {
+        console.log("🔄 检测到旧版本Token，正在迁移...")
+        // 重新保存token，让SecretService自动检测类型
+        await this.secretService.setToken(token)
+        console.log("✅ Token迁移完成")
+      }
+    } catch (error) {
+      console.error("⚠️ Token迁移失败:", error)
+      // 迁移失败不影响扩展启动
+    }
   }
 
   /**
