@@ -7,6 +7,7 @@
   "config.title": "Packy Usage",
   "config.apiToken.description": "用于访问预算数据的 API Token",
   "config.apiEndpoint.description": "预算数据的 API 端点",
+  "config.proxy.description": "要使用的代理设置。如果未设置，则将从http_proxy和https_proxy环境变量继承",
   "view.container.title": "Packy Usage",
   "view.explorer.name": "使用情况浏览器"
 }

@@ -7,6 +7,7 @@
   "config.title": "Packy Usage",
   "config.apiToken.description": "API Token for budget data access",
   "config.apiEndpoint.description": "API endpoint for budget data",
+  "config.proxy.description": "Proxy settings to use. If not set, will inherit from http_proxy and https_proxy environment variables",
   "view.container.title": "Packy Usage",
   "view.explorer.name": "Usage Explorer"
 }
