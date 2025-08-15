@@ -124,9 +124,12 @@ export class SecretService {
     if (validator && validator.isExpired(token)) {
       await this.deleteToken()
       vscode.window
-        .showWarningMessage("Token已过期，请重新配置", "立即配置")
+        .showWarningMessage(
+          vscode.l10n.t("Token has expired, please reconfigure"),
+          vscode.l10n.t("Configure Now")
+        )
         .then((choice) => {
-          if (choice === "立即配置") {
+          if (choice === vscode.l10n.t("Configure Now")) {
             vscode.commands.executeCommand("packy-usage.setToken")
           }
         })
@@ -162,17 +165,17 @@ export class SecretService {
     const tokenType = this.detectTokenType(token)
     if (!tokenType) {
       throw new Error(
-        "无法识别Token类型，请提供有效的API Token (sk-开头) 或 JWT Token"
+        "Unrecognized Token type, please provide valid API Token (sk-) or JWT Token"
       )
     }
 
     const validator = this.validators.get(tokenType)!
     if (!validator.validate(token)) {
-      throw new Error(`无效的${tokenType} Token格式`)
+      throw new Error(`Invalid ${tokenType} Token format`)
     }
 
     if (validator.isExpired(token)) {
-      throw new Error("Token已过期")
+      throw new Error("Token has expired")
     }
 
     await this.context.secrets.store(this.TOKEN_KEY, token)
