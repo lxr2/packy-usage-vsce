@@ -107,11 +107,15 @@ export class CommandController {
         [
           {
             description: vscode.l10n.t("Permanently valid access token"),
-            detail: vscode.l10n.t("Get API Token starting with 'sk-' directly from PackyCode Dashboard"),
+            detail: vscode.l10n.t(
+              "Get API Token starting with 'sk-' directly from PackyCode Dashboard"
+            ),
             label: vscode.l10n.t("API Token (Recommended)")
           },
           {
-            description: vscode.l10n.t("Temporary token from PackyCode Dashboard"),
+            description: vscode.l10n.t(
+              "Temporary token from PackyCode Dashboard"
+            ),
             detail: vscode.l10n.t(
               "Visit PackyCode Dashboard, open browser developer tools (F12), find the cookie named 'token' in Application/Storage > Cookies"
             ),
@@ -119,7 +123,9 @@ export class CommandController {
           }
         ],
         {
-          placeHolder: vscode.l10n.t("Select token type to view detailed instructions"),
+          placeHolder: vscode.l10n.t(
+            "Select token type to view detailed instructions"
+          ),
           title: vscode.l10n.t("Token acquisition instructions")
         }
       )
@@ -132,7 +138,9 @@ export class CommandController {
     const token = await vscode.window.showInputBox({
       password: true,
       placeHolder: vscode.l10n.t("Enter API Token (sk-) or JWT Token"),
-      prompt: vscode.l10n.t("Recommended: Use permanent API Token (sk-). JWT Token can be obtained from PackyCode Dashboard cookies"),
+      prompt: vscode.l10n.t(
+        "Recommended: Use permanent API Token (sk-). JWT Token can be obtained from PackyCode Dashboard cookies"
+      ),
       validateInput: (value) => this.validateTokenInput(value)
     })
 
@@ -146,7 +154,9 @@ export class CommandController {
       // 显示Token类型和过期时间信息
       if (token.startsWith("sk-")) {
         vscode.window.showInformationMessage(
-          vscode.l10n.t("API Token saved successfully! This Token is permanently valid.")
+          vscode.l10n.t(
+            "API Token saved successfully! This Token is permanently valid."
+          )
         )
       } else {
         const expiration = this.secretService.getTokenExpiration(token)
@@ -188,6 +198,16 @@ export class CommandController {
     )
 
     switch (choice) {
+      case vscode.l10n.t("Configure Later"):
+        vscode.window.showInformationMessage(
+          vscode.l10n.t(
+            'You can configure it later by searching for "Set API Token" in the command palette.'
+          )
+        )
+        break
+      case vscode.l10n.t("Configure Now"):
+        vscode.commands.executeCommand("packy-usage.setToken")
+        break
       case vscode.l10n.t("View Help"): {
         const helpText = vscode.l10n.t(`### Token Acquisition Methods
 
@@ -213,16 +233,6 @@ export class CommandController {
         }, 500)
         break
       }
-      case vscode.l10n.t("Configure Later"):
-        vscode.window.showInformationMessage(
-          vscode.l10n.t(
-            'You can configure it later by searching for "Set API Token" in the command palette.'
-          )
-        )
-        break
-      case vscode.l10n.t("Configure Now"):
-        vscode.commands.executeCommand("packy-usage.setToken")
-        break
     }
   }
 
@@ -266,6 +276,8 @@ export class CommandController {
       }
     }
 
-    return vscode.l10n.t("Unrecognized Token format, please provide API Token (sk-) or JWT Token")
+    return vscode.l10n.t(
+      "Unrecognized Token format, please provide API Token (sk-) or JWT Token"
+    )
   }
 }
